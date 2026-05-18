@@ -55,7 +55,6 @@ const globalState = {
       { id: 3, text: "310 PLN", updated: false },
     ],
     foundBeacon: false,
-    // ----- NOWE DLA LEVEL 2 -----
     sensorData: {
       temperature: 22.5,
       humidity: 45,
@@ -63,8 +62,8 @@ const globalState = {
       lastUpdate: Date.now(),
     },
     irData: {
-      zone: "CENTER", // LEFT, CENTER, RIGHT
-      distance: 50,    // 0-100 cm
+      zone: "CENTER",
+      distance: 50,
     },
     pirData: {
       motionDetected: false,
@@ -139,7 +138,6 @@ function shutdownServerRoom() {
   }, 10000);
 }
 
-// Level 2 validation (oryginalna)
 function validateLevel2Completion() {
   const labelsUpdated = globalState.level2.einkLabels.every((label) => label.updated);
   if (labelsUpdated && globalState.level2.foundBeacon) {
@@ -173,17 +171,13 @@ function generateIncident() {
   emitState();
 }
 
-// ========== GENERATOR DANYCH SENSORÓW (LEVEL 2) ==========
 function generateSensorData() {
   const now = Date.now();
-  // Temperatura: sinus 15-35°C + szum
   const t = now / 1000;
-  const tempBase = 22 + 5 * Math.sin(t / 30); // okres ~30s
+  const tempBase = 22 + 5 * Math.sin(t / 30);
   const temperature = Number((tempBase + (Math.random() - 0.5) * 1.5).toFixed(1));
-  // Wilgotność: 30-70% + szum
   const humidityBase = 50 + 15 * Math.sin(t / 45);
   const humidity = Number((humidityBase + (Math.random() - 0.5) * 3).toFixed(0));
-  // Bateria: powoli spada od 100 do 20, potem reset (symulacja)
   let battery = globalState.level2.sensorData.battery;
   if (battery <= 20) battery = 100;
   else battery = Number((battery - (Math.random() * 0.05)).toFixed(1));
@@ -195,12 +189,10 @@ function generateSensorData() {
     lastUpdate: now,
   };
 
-  // PIR: losowe wykrycie ruchu z 15% szansą co cykl
   const motionDetected = Math.random() < 0.15;
   if (motionDetected) {
     globalState.level2.pirData.motionDetected = true;
     globalState.level2.pirData.lastMotion = now;
-    // Auto-reset po 2 sekundach
     setTimeout(() => {
       if (globalState.level2.pirData.lastMotion === now) {
         globalState.level2.pirData.motionDetected = false;
@@ -209,16 +201,14 @@ function generateSensorData() {
     }, 2000);
   }
 
-  // Emituj dedykowany event dla sensorów
   io.emit("sensorUpdate", {
     mvs: globalState.level2.sensorData,
     pir: globalState.level2.pirData,
     ir: globalState.level2.irData,
   });
-  emitState(); // aktualizacja pełnego stanu
+  emitState();
 }
 
-// Interwał sensorów – działa tylko gdy level 2 aktywny
 let sensorInterval = null;
 function startSensorInterval() {
   if (sensorInterval) clearInterval(sensorInterval);
@@ -230,7 +220,6 @@ function startSensorInterval() {
 }
 startSensorInterval();
 
-// Istniejące interwały
 setInterval(() => {
   globalState.level2.beacons.forEach((b) => {
     b.x += b.dx;
@@ -252,7 +241,7 @@ io.on("connection", (socket) => {
   socket.emit("stateUpdate", globalState);
   io.emit("usersUpdate", Object.values(globalState.users));
 
-  // Poziom 1
+  // Level 1
   socket.on("toggleSocket", ({ stripId, socketIndex }) => {
     if (globalState.level1.breakerTriggered || globalState.level1.serverShutdownUntil) return;
     const strip = globalState.level1.strips[stripId];
@@ -266,7 +255,12 @@ io.on("connection", (socket) => {
     emitState();
   });
 
-  // Poziom 2
+  socket.on("level1Completed", () => {
+    globalState.levelCompleted = true;
+    emitState();
+  });
+
+  // Level 2
   socket.on("scanGateway", ({ gatewayId }) => {
     const gateway = globalState.level2.gateways.find((g) => g.id === gatewayId);
     if (!gateway) return;
@@ -283,11 +277,6 @@ io.on("connection", (socket) => {
     emitState();
   });
 
-  socket.on("level1Completed", () => {
-    globalState.levelCompleted = true;
-    emitState();
-  });
-
   socket.on("updatePrice", ({ labelId, newPrice }) => {
     const label = globalState.level2.einkLabels.find((l) => l.id === labelId);
     if (!label) return;
@@ -297,15 +286,44 @@ io.on("connection", (socket) => {
     emitState();
   });
 
-  // NOWE: aktualizacja IR z frontendu (symulacja zbliżenia)
   socket.on("irProximity", ({ zone, distance }) => {
     globalState.level2.irData = { zone, distance };
     emitState();
-    // Dodatkowo wyślij potwierdzenie tylko do tego klienta
     socket.emit("irConfirmed", { zone, distance });
   });
 
-  // Poziom 3
+  // Level 2 – zapisanie kodu (opcjonalne, ale dodane dla kompletności)
+  socket.on("level2Completed", ({ accessCode }) => {
+    console.log(`[Level2] Completed with code: ${accessCode} by ${socket.id}`);
+    // Można zapisać w globalState lub bazie danych
+    globalState.level2.accessCode = accessCode;
+    emitState();
+  });
+
+  // Level 3 – nowe eventy dla System Mapping
+  socket.on("level3Completed", () => {
+    console.log(`[Level3] Completed by ${socket.id}`);
+    globalState.levelCompleted = true;
+    globalState.currentLevel = 3; // Ustawiamy aktualny poziom na 3 (już jest, ale dla pewności)
+    emitState();
+    // Możemy wysłać specjalny event do wszystkich, że gra ukończona
+    io.emit("gameCompleted", { message: "Gratulacje! System miejski został poprawnie skonfigurowany." });
+  });
+
+  // Uniwersalny event do oznaczania ukończenia poziomu (dla kompatybilności)
+  socket.on("levelComplete", ({ level }) => {
+    if (level === 3) {
+      console.log(`[LevelComplete] Level ${level} finished by ${socket.id}`);
+      globalState.levelCompleted = true;
+      globalState.currentLevel = level;
+      emitState();
+      if (level === 3) {
+        io.emit("gameCompleted", { message: "System miejski w pełni operacyjny!" });
+      }
+    }
+  });
+
+  // Poziom 3 – rozwiązywanie incydentów (stary system, zostawiamy)
   socket.on("resolveIncident", (incidentId) => {
     const incident = globalState.level3.incidents.find((i) => i.id === incidentId);
     if (!incident) return;
@@ -314,12 +332,16 @@ io.on("connection", (socket) => {
     emitState();
   });
 
+  // Admin – ręczne przejście do następnego poziomu (jeśli ukończono)
   socket.on("adminNextLevel", () => {
     if (!globalState.levelCompleted) return;
     if (globalState.currentLevel < 3) {
       globalState.currentLevel += 1;
       globalState.levelCompleted = false;
       emitState();
+    } else if (globalState.currentLevel === 3 && globalState.levelCompleted) {
+      // Gra ukończona – można np. zresetować lub nic nie robić
+      console.log("Game already completed.");
     }
   });
 
