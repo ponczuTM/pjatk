@@ -12,7 +12,7 @@ const io = new Server(server, {
 });
 
 const PORT = 3001;
-const POWER_LIMIT = 18000;
+const POWER_LIMIT = 26000;
 const REQUIRED_LEVEL1_POWER_MIN = 12000;
 
 const LEVEL1_STRIP_METADATA = [
@@ -127,8 +127,8 @@ const globalState = {
   level1: {
     strips: LEVEL1_STRIP_METADATA.map((strip) => ({
       ...strip,
-      sockets: [false, false, false, false],
-      enabled: strip.id === 9,
+      sockets: strip.id === 9 ? [true, true, true, true] : [false, false, false, false],
+      enabled: true,
       powerUsage: 0,
     })),
     totalPower: 0,
@@ -188,7 +188,7 @@ function emitState() {
 
 function resetLevel1() {
   globalState.level1.strips.forEach((strip) => {
-    strip.sockets = [false, false, false, false];
+    strip.sockets = strip.id === 9 ? [true, true, true, true] : [false, false, false, false];
     strip.enabled = true;
     strip.powerUsage = 0;
   });
