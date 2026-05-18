@@ -19,8 +19,12 @@ const PORT = 3001;
 
 const POWER_LIMIT = 18000;
 
+const REQUIRED_LEVEL1_POWER_MIN = 12000;
+
 const globalState = {
   currentLevel: 1,
+
+  levelCompleted: false,
 
   users: {},
 
@@ -30,41 +34,115 @@ const globalState = {
       sockets: [false, false, false, false],
       powerUsage: 0,
     })),
+
     totalPower: 0,
+
     stableSince: null,
+
     breakerTriggered: false,
+
+    blackoutUntil: null,
+
+    serverShutdownUntil: null,
   },
 
   level2: {
     products: [
-      { id: 1, name: "Sensor-X", x: 120, y: 180, price: 120 },
-      { id: 2, name: "Beacon-Y", x: 380, y: 120, price: 220 },
-      { id: 3, name: "Router-Z", x: 540, y: 280, price: 310 },
+      {
+        id: 1,
+        name: "Sensor-X",
+        x: 120,
+        y: 180,
+        price: 120,
+      },
+
+      {
+        id: 2,
+        name: "Beacon-Y",
+        x: 380,
+        y: 120,
+        price: 220,
+      },
+
+      {
+        id: 3,
+        name: "Router-Z",
+        x: 540,
+        y: 280,
+        price: 310,
+      },
     ],
 
     gateways: [
       { id: 1, x: 100, y: 100 },
+
       { id: 2, x: 350, y: 200 },
+
       { id: 3, x: 600, y: 150 },
     ],
 
     beacons: [
-      { id: 1, x: 80, y: 90, dx: 2, dy: 1 },
-      { id: 2, x: 420, y: 250, dx: -2, dy: 1 },
+      {
+        id: 1,
+        x: 80,
+        y: 90,
+        dx: 2,
+        dy: 1,
+      },
+
+      {
+        id: 2,
+        x: 420,
+        y: 250,
+        dx: -2,
+        dy: 1,
+      },
     ],
 
     einkLabels: [
-      { id: 1, text: "120 PLN" },
-      { id: 2, text: "220 PLN" },
-      { id: 3, text: "310 PLN" },
+      {
+        id: 1,
+        text: "120 PLN",
+        updated: false,
+      },
+
+      {
+        id: 2,
+        text: "220 PLN",
+        updated: false,
+      },
+
+      {
+        id: 3,
+        text: "310 PLN",
+        updated: false,
+      },
     ],
+
+    foundBeacon: false,
   },
 
   level3: {
     incidents: [],
+
     nextIncidentId: 1,
   },
 };
+
+function emitState() {
+  io.emit("stateUpdate", globalState);
+}
+
+function resetLevel1() {
+  globalState.level1.strips.forEach((strip) => {
+    strip.sockets = [false, false, false, false];
+    strip.powerUsage = 0;
+  });
+
+  globalState.level1.totalPower = 0;
+
+  globalState.levelCompleted = false;
+}
 
 function calculatePower() {
   let total = 0;
@@ -79,6 +157,7 @@ function calculatePower() {
     });
 
     strip.powerUsage = usage;
+
     total += usage;
   });
 
@@ -87,56 +166,114 @@ function calculatePower() {
   if (total > POWER_LIMIT) {
     globalState.level1.breakerTriggered = true;
 
-    globalState.level1.strips.forEach((strip) => {
-      strip.sockets = [false, false, false, false];
-      strip.powerUsage = 0;
-    });
+    globalState.level1.blackoutUntil =
+      Date.now() + 5000;
 
-    globalState.level1.totalPower = 0;
+    resetLevel1();
+
+    emitState();
+
+    setTimeout(() => {
+      globalState.level1.breakerTriggered = false;
+
+      globalState.level1.blackoutUntil = null;
+
+      emitState();
+    }, 5000);
+
+    return;
+  }
+
+  globalState.level1.breakerTriggered = false;
+
+  if (
+    total >= REQUIRED_LEVEL1_POWER_MIN &&
+    total <= POWER_LIMIT &&
+    globalState.currentLevel === 1
+  ) {
+    globalState.levelCompleted = true;
   } else {
-    globalState.level1.breakerTriggered = false;
+    globalState.levelCompleted = false;
   }
 }
 
-function checkLevelProgression() {
-  const l1 = globalState.level1;
+function shutdownServerRoom() {
+  globalState.level1.serverShutdownUntil =
+    Date.now() + 10000;
+
+  resetLevel1();
+
+  emitState();
+
+  setTimeout(() => {
+    globalState.level1.serverShutdownUntil = null;
+
+    emitState();
+  }, 10000);
+}
+
+function validateLevel2Completion() {
+  const labelsUpdated =
+    globalState.level2.einkLabels.every(
+      (label) => label.updated
+    );
 
   if (
-    globalState.currentLevel === 1 &&
-    l1.totalPower > 0 &&
-    l1.totalPower < POWER_LIMIT * 0.8
+    labelsUpdated &&
+    globalState.level2.foundBeacon
   ) {
-    if (!l1.stableSince) {
-      l1.stableSince = Date.now();
-    }
-
-    const stableTime = Date.now() - l1.stableSince;
-
-    if (stableTime >= 60000) {
-      globalState.currentLevel = 2;
-      io.emit("levelChanged", 2);
-    }
+    globalState.levelCompleted = true;
   } else {
-    l1.stableSince = null;
+    globalState.levelCompleted = false;
+  }
+}
+
+function validateLevel3Completion() {
+  const unresolved =
+    globalState.level3.incidents.filter(
+      (i) => !i.resolved
+    );
+
+  if (
+    unresolved.length === 0 &&
+    globalState.level3.incidents.length > 0
+  ) {
+    globalState.levelCompleted = true;
+  } else {
+    globalState.levelCompleted = false;
   }
 }
 
 function generateIncident() {
-  if (globalState.currentLevel !== 3) return;
+  if (globalState.currentLevel !== 3) {
+    return;
+  }
 
   const types = ["MOTION", "SOS"];
 
   const incident = {
     id: globalState.level3.nextIncidentId++,
-    type: types[Math.floor(Math.random() * types.length)],
-    room: ["A1", "B2", "C3"][Math.floor(Math.random() * 3)],
+
+    type:
+      types[
+        Math.floor(Math.random() * types.length)
+      ],
+
+    room:
+      ["A1", "B2", "C3"][
+        Math.floor(Math.random() * 3)
+      ],
+
     timestamp: Date.now(),
+
     resolved: false,
   };
 
   globalState.level3.incidents.push(incident);
 
-  io.emit("stateUpdate", globalState);
+  validateLevel3Completion();
+
+  emitState();
 }
 
 setInterval(() => {
@@ -144,16 +281,17 @@ setInterval(() => {
     b.x += b.dx;
     b.y += b.dy;
 
-    if (b.x < 20 || b.x > 700) b.dx *= -1;
-    if (b.y < 20 || b.y > 350) b.dy *= -1;
+    if (b.x < 20 || b.x > 700) {
+      b.dx *= -1;
+    }
+
+    if (b.y < 20 || b.y > 350) {
+      b.dy *= -1;
+    }
   });
 
-  io.emit("stateUpdate", globalState);
+  emitState();
 }, 1000);
-
-setInterval(() => {
-  checkLevelProgression();
-}, 2000);
 
 setInterval(() => {
   generateIncident();
@@ -164,91 +302,171 @@ io.on("connection", (socket) => {
 
   globalState.users[socket.id] = {
     id: socket.id,
+
     connectedAt: Date.now(),
   };
 
   socket.emit("stateUpdate", globalState);
 
-  io.emit("usersUpdate", Object.values(globalState.users));
+  io.emit(
+    "usersUpdate",
+    Object.values(globalState.users)
+  );
 
-  socket.on("toggleSocket", ({ stripId, socketIndex }) => {
-    const strip = globalState.level1.strips[stripId];
+  socket.on(
+    "toggleSocket",
+    ({ stripId, socketIndex }) => {
+      if (
+        globalState.level1.breakerTriggered ||
+        globalState.level1.serverShutdownUntil
+      ) {
+        return;
+      }
 
-    if (!strip) return;
+      const strip =
+        globalState.level1.strips[stripId];
 
-    strip.sockets[socketIndex] = !strip.sockets[socketIndex];
+      if (!strip) {
+        return;
+      }
 
-    calculatePower();
+      strip.sockets[socketIndex] =
+        !strip.sockets[socketIndex];
 
-    io.emit("stateUpdate", globalState);
-  });
+      if (
+        stripId === 9 &&
+        socketIndex === 0 &&
+        strip.sockets[socketIndex] === false
+      ) {
+        shutdownServerRoom();
+
+        return;
+      }
+
+      calculatePower();
+
+      emitState();
+    }
+  );
 
   socket.on("scanGateway", ({ gatewayId }) => {
-    const gateway = globalState.level2.gateways.find(
-      (g) => g.id === gatewayId
-    );
-
-    if (!gateway) return;
-
-    const beaconData = globalState.level2.beacons.map((b) => {
-      const distance = Math.sqrt(
-        Math.pow(gateway.x - b.x, 2) + Math.pow(gateway.y - b.y, 2)
+    const gateway =
+      globalState.level2.gateways.find(
+        (g) => g.id === gatewayId
       );
 
-      return {
-        beaconId: b.id,
-        rssi: Math.max(-90, -distance / 5),
-      };
-    });
+    if (!gateway) {
+      return;
+    }
+
+    const beaconData =
+      globalState.level2.beacons.map((b) => {
+        const distance = Math.sqrt(
+          Math.pow(gateway.x - b.x, 2) +
+            Math.pow(gateway.y - b.y, 2)
+        );
+
+        const rssi = Math.max(
+          -90,
+          -distance / 5
+        );
+
+        if (rssi > -25) {
+          globalState.level2.foundBeacon = true;
+
+          validateLevel2Completion();
+        }
+
+        return {
+          beaconId: b.id,
+          rssi,
+        };
+      });
 
     socket.emit("gatewayData", beaconData);
+
+    emitState();
   });
 
-  socket.on("updatePrice", ({ labelId, newPrice }) => {
-    const label = globalState.level2.einkLabels.find(
-      (l) => l.id === labelId
-    );
+  socket.on(
+    "updatePrice",
+    ({ labelId, newPrice }) => {
+      const label =
+        globalState.level2.einkLabels.find(
+          (l) => l.id === labelId
+        );
 
-    if (!label) return;
+      if (!label) {
+        return;
+      }
 
-    label.text = `${newPrice} PLN`;
+      label.text = `${newPrice} PLN`;
 
-    io.emit("stateUpdate", globalState);
-  });
+      label.updated = true;
 
-  socket.on("resolveIncident", (incidentId) => {
-    const incident = globalState.level3.incidents.find(
-      (i) => i.id === incidentId
-    );
+      validateLevel2Completion();
 
-    if (!incident) return;
+      emitState();
+    }
+  );
 
-    incident.resolved = true;
+  socket.on(
+    "resolveIncident",
+    (incidentId) => {
+      const incident =
+        globalState.level3.incidents.find(
+          (i) => i.id === incidentId
+        );
 
-    io.emit("stateUpdate", globalState);
-  });
+      if (!incident) {
+        return;
+      }
+
+      incident.resolved = true;
+
+      validateLevel3Completion();
+
+      emitState();
+    }
+  );
 
   socket.on("adminNextLevel", () => {
+    if (!globalState.levelCompleted) {
+      return;
+    }
+
     if (globalState.currentLevel < 3) {
       globalState.currentLevel += 1;
 
-      io.emit("stateUpdate", globalState);
+      globalState.levelCompleted = false;
+
+      emitState();
     }
   });
 
   socket.on("disconnect", () => {
     delete globalState.users[socket.id];
 
-    io.emit("usersUpdate", Object.values(globalState.users));
+    io.emit(
+      "usersUpdate",
+      Object.values(globalState.users)
+    );
 
-    console.log("User disconnected:", socket.id);
+    console.log(
+      "User disconnected:",
+      socket.id
+    );
   });
 });
 
 app.get("/", (req, res) => {
-  res.send("IoT Digital Twin Simulation Server Running");
+  res.send(
+    "IoT Digital Twin Simulation Server Running"
+  );
 });
 
 server.listen(PORT, "0.0.0.0", () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(
+    `Server running on port ${PORT}`
+  );
 });
