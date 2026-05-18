@@ -15,6 +15,109 @@ const PORT = 3001;
 const POWER_LIMIT = 18000;
 const REQUIRED_LEVEL1_POWER_MIN = 12000;
 
+const LEVEL1_STRIP_METADATA = [
+  {
+    id: 0,
+    critical: false,
+    devices: [
+      { power: 900, required: true, server: false },
+      { power: 1200, required: true, server: false },
+      { power: 1400, required: true, server: false, annoying: true },
+      { power: 250, required: false, server: false },
+    ],
+  },
+  {
+    id: 1,
+    critical: false,
+    devices: [
+      { power: 1200, required: true, server: false },
+      { power: 1000, required: true, server: false },
+      { power: 450, required: false, server: false },
+      { power: 150, required: false, server: false },
+    ],
+  },
+  {
+    id: 2,
+    critical: false,
+    devices: [
+      { power: 900, required: true, server: false },
+      { power: 500, required: true, server: false },
+      { power: 300, required: true, server: false },
+      { power: 500, required: false, server: false },
+    ],
+  },
+  {
+    id: 3,
+    critical: false,
+    devices: [
+      { power: 900, required: true, server: false },
+      { power: 400, required: true, server: false },
+      { power: 1200, required: false, server: false, annoying: true },
+      { power: 2000, required: false, server: false, annoying: true },
+    ],
+  },
+  {
+    id: 4,
+    critical: false,
+    devices: [
+      { power: 1800, required: true, server: false },
+      { power: 300, required: true, server: false },
+      { power: 700, required: true, server: false },
+      { power: 250, required: false, server: false },
+    ],
+  },
+  {
+    id: 5,
+    critical: false,
+    devices: [
+      { power: 2400, required: true, server: true },
+      { power: 600, required: true, server: false },
+      { power: 350, required: true, server: false },
+      { power: 250, required: false, server: false },
+    ],
+  },
+  {
+    id: 6,
+    critical: false,
+    devices: [
+      { power: 400, required: false, server: false },
+      { power: 1600, required: false, server: false },
+      { power: 1200, required: false, server: false },
+      { power: 200, required: true, server: false },
+    ],
+  },
+  {
+    id: 7,
+    critical: false,
+    devices: [
+      { power: 1900, required: true, server: true },
+      { power: 400, required: true, server: false },
+      { power: 250, required: true, server: false },
+      { power: 1700, required: false, server: false, annoying: true },
+    ],
+  },
+  {
+    id: 8,
+    critical: false,
+    devices: [
+      { power: 1100, required: true, server: false },
+      { power: 600, required: true, server: false },
+      { power: 300, required: true, server: false },
+      { power: 200, required: false, server: false },
+    ],
+  },
+  {
+    id: 9,
+    critical: true,
+    devices: [
+      { power: 3000, required: true, server: true },
+      { power: 900, required: true, server: false },
+      { power: 500, required: true, server: false },
+      { power: 1500, required: true, server: false },
+    ],
+  },
+];
+
 // ========== GLOBAL STATE ==========
 const globalState = {
   currentLevel: 1,
@@ -22,9 +125,10 @@ const globalState = {
   users: {},
 
   level1: {
-    strips: Array.from({ length: 30 }, (_, i) => ({
-      id: i,
+    strips: LEVEL1_STRIP_METADATA.map((strip) => ({
+      ...strip,
       sockets: [false, false, false, false],
+      enabled: strip.id === 9,
       powerUsage: 0,
     })),
     totalPower: 0,
@@ -85,6 +189,7 @@ function emitState() {
 function resetLevel1() {
   globalState.level1.strips.forEach((strip) => {
     strip.sockets = [false, false, false, false];
+    strip.enabled = true;
     strip.powerUsage = 0;
   });
   globalState.level1.totalPower = 0;
@@ -95,9 +200,13 @@ function calculatePower() {
   let total = 0;
   globalState.level1.strips.forEach((strip) => {
     let usage = 0;
-    strip.sockets.forEach((socket) => {
-      if (socket) usage += 1500;
-    });
+    if (strip.enabled) {
+      strip.sockets.forEach((socket, idx) => {
+        if (socket && strip.devices?.[idx]) {
+          usage += strip.devices[idx].power;
+        }
+      });
+    }
     strip.powerUsage = usage;
     total += usage;
   });
@@ -245,9 +354,22 @@ io.on("connection", (socket) => {
   socket.on("toggleSocket", ({ stripId, socketIndex }) => {
     if (globalState.level1.breakerTriggered || globalState.level1.serverShutdownUntil) return;
     const strip = globalState.level1.strips[stripId];
-    if (!strip) return;
+    if (!strip || !strip.enabled) return;
     strip.sockets[socketIndex] = !strip.sockets[socketIndex];
     if (stripId === 9 && socketIndex === 0 && strip.sockets[socketIndex] === false) {
+      shutdownServerRoom();
+      return;
+    }
+    calculatePower();
+    emitState();
+  });
+
+  socket.on("toggleStrip", ({ stripId }) => {
+    if (globalState.level1.breakerTriggered || globalState.level1.serverShutdownUntil) return;
+    const strip = globalState.level1.strips[stripId];
+    if (!strip) return;
+    strip.enabled = !strip.enabled;
+    if (!strip.enabled && strip.id === 9) {
       shutdownServerRoom();
       return;
     }
