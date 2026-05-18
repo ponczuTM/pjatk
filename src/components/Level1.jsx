@@ -32,114 +32,13 @@ import styles from "./Level1.module.css";
 const POWER_LIMIT = 26000;
 
 const stripsDefinition = [
-  {
-    id: 0,
-    title: "Fotobudka Showroom",
-    critical: false,
-    devices: [
-      { name: "Ekran fotobudki", power: 900, required: true, icon: Monitor },
-      { name: "Komputer fotobudki", power: 1200, required: true, icon: Cpu },
-      { name: "Drukarka zdjęć", power: 1400, required: true, icon: Printer, annoying: true },
-      { name: "Lampka LED dekoracyjna", power: 250, required: false, icon: LampDesk },
-    ],
-  },
-  {
-    id: 1,
-    title: "Stół Multimedialny",
-    devices: [
-      { name: "Ekran dotykowy stołu", power: 1200, required: true, icon: Monitor },
-      { name: "PC stołu multimedialnego", power: 1000, required: true, icon: Cpu },
-      { name: "Nagłośnienie stołu", power: 450, required: false, icon: Speaker },
-      { name: "Ładowarka demo", power: 150, required: false, icon: Zap },
-    ],
-  },
-  {
-    id: 2,
-    title: "Totem Android Showroom",
-    devices: [
-      { name: "Ekran OLED totemu", power: 900, required: true, icon: Tv },
-      { name: "Android Box", power: 500, required: true, icon: Cpu },
-      { name: "Router WiFi demo", power: 300, required: true, icon: Router },
-      { name: "Podświetlenie RGB", power: 500, required: false, icon: LampDesk },
-    ],
-  },
-  {
-    id: 3,
-    title: "Recepcja Smart Office",
-    devices: [
-      { name: "Komputer recepcji", power: 900, required: true, icon: Cpu },
-      { name: "Monitor recepcji", power: 400, required: true, icon: Monitor },
-      { name: "Drukarka recepcji", power: 1200, required: false, icon: Printer, annoying: true },
-      { name: "Czajnik recepcji", power: 2000, required: false, icon: Coffee, annoying: true },
-    ],
-  },
-  {
-    id: 4,
-    title: "Strefa VR",
-    devices: [
-      { name: "Gaming PC VR", power: 1800, required: true, icon: Cpu },
-      { name: "Gogle VR", power: 300, required: true, icon: Gamepad2 },
-      { name: "Telewizor VR", power: 700, required: true, icon: Tv },
-      { name: "Wentylator VR", power: 250, required: false, icon: AirVent },
-    ],
-  },
-  {
-    id: 5,
-    title: "Monitoring AI",
-    devices: [
-      { name: "Serwer AI Vision", power: 2400, required: true, icon: HardDrive, server: true },
-      { name: "Kamery showroom", power: 600, required: true, icon: Camera },
-      { name: "Switch PoE", power: 350, required: true, icon: Wifi },
-      { name: "Podświetlenie techniczne", power: 250, required: false, icon: LampDesk },
-    ],
-  },
-  {
-    id: 6,
-    title: "Magazyn",
-    devices: [
-      { name: "Lampka magazynu", power: 400, required: false, icon: LampDesk },
-      { name: "Odkurzacz magazynu", power: 1600, required: false, icon: Bot },
-      { name: "Ładowarka paleciaka", power: 1200, required: false, icon: Zap },
-      { name: "Tablet magazynu", power: 200, required: true, icon: Monitor },
-    ],
-  },
-  {
-    id: 7,
-    title: "Security Center",
-    devices: [
-      { name: "Serwer kontroli dostępu", power: 1900, required: true, icon: ShieldAlert, server: true },
-      { name: "Monitor CCTV", power: 400, required: true, icon: Monitor },
-      { name: "Alarm demo", power: 250, required: true, icon: ShieldAlert },
-      { name: "Ekspres do kawy ochrony", power: 1700, required: false, icon: Coffee, annoying: true },
-    ],
-  },
-  {
-    id: 8,
-    title: "Sala Konferencyjna",
-    devices: [
-      { name: "Projektor", power: 1100, required: true, icon: Tv },
-      { name: "Mini PC sali", power: 600, required: true, icon: Cpu },
-      { name: "Soundbar", power: 300, required: true, icon: Speaker },
-      { name: "Lampka ambient", power: 200, required: false, icon: LampDesk },
-    ],
-  },
-  {
-    id: 9,
-    title: "Serwerownia",
-    critical: true,
-    devices: [
-      { name: "GŁÓWNY SERWER SHOWROOM", power: 3000, required: true, icon: ServerCrash, server: true },
-      { name: "Backup NAS", power: 900, required: true, icon: HardDrive },
-      { name: "Switch Core", power: 500, required: true, icon: Wifi },
-      { name: "Klimatyzacja rack", power: 1500, required: true, icon: AirVent },
-    ],
-  },
 ];
 // ----------------------------------------------------------------
 
 export default function Level1() {
   const navigate = useNavigate();
-  const { socket } = useSocket();
+  const { socket, state } = useSocket();
+  const [awaitingLevel2, setAwaitingLevel2] = useState(false);
 
   // ✅ ZMIANA: Serwerownia (id 9) startuje włączona ze wszystkimi gniazdami ON.
   // Pozostałe listwy startują wyłączone, gniazda OFF.
@@ -208,6 +107,19 @@ export default function Level1() {
     }
   }, [isSuccess, levelCompletedLocally]);
 
+  useEffect(() => {
+    if (socket && levelCompletedLocally) {
+      socket.emit("level1Completed");
+    }
+  }, [socket, levelCompletedLocally]);
+
+  useEffect(() => {
+    if (awaitingLevel2 && state?.currentLevel >= 2) {
+      setAwaitingLevel2(false);
+      navigate("/level2");
+    }
+  }, [awaitingLevel2, state?.currentLevel, navigate]);
+
   // Blackout z powodu przeciążenia
   useEffect(() => {
     if (totalPower > POWER_LIMIT && !blackout) {
@@ -251,6 +163,9 @@ export default function Level1() {
 
   const toggleSocket = (stripId, socketIndex) => {
     if (blackout || serverDown) return;
+    if (socket) {
+      socket.emit("toggleSocket", { stripId, socketIndex });
+    }
     setDevices((prev) =>
       prev.map((strip) => {
         if (strip.id !== stripId) return strip;
@@ -286,7 +201,11 @@ export default function Level1() {
   };
 
   const goToNextLevel = () => {
-    navigate("/level2");
+    if (!levelCompletedLocally) return;
+    if (socket) {
+      socket.emit("adminNextLevel");
+      setAwaitingLevel2(true);
+    }
   };
 
   return (
@@ -421,8 +340,12 @@ export default function Level1() {
             <h2 className="text-3xl font-black mb-2">Showroom działa stabilnie</h2>
             <p className="text-slate-300">Wszystkie wymagane systemy są aktywne.</p>
           </div>
-          <button onClick={goToNextLevel} className={styles.nextButton}>
-            NASTĘPNY POZIOM → LEVEL 2
+          <button
+            onClick={goToNextLevel}
+            disabled={awaitingLevel2}
+            className={`${styles.nextButton} ${awaitingLevel2 ? "opacity-70 cursor-not-allowed" : ""}`}
+          >
+            {awaitingLevel2 ? "Oczekiwanie na serwer..." : "NASTĘPNY POZIOM → LEVEL 2"}
           </button>
         </motion.div>
       )}
