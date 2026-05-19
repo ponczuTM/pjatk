@@ -1,0 +1,162 @@
+[
+  {
+    "question": "Który protokół komunikacyjny jest określany jako „lekki protokół typu publish/subscribe” i idealnie nadaje się do IoT ze względu na mały narzut i energooszczędność?",
+    "answer_a": "HTTP",
+    "answer_b": "Modbus/TCP",
+    "answer_c": "MQTT",
+    "answer_d": "SNMP",
+    "correct_answer": "c"
+  },
+  {
+    "question": "Która technologia pozwala na przesyłanie danych i zasilania jednym kablem Ethernet, co ułatwia montaż np. kamer i gatewayi?",
+    "answer_a": "PoE (Power over Ethernet)",
+    "answer_b": "USB Power Delivery",
+    "answer_c": "Wi-Fi 6",
+    "answer_d": "BLE Beacon",
+    "correct_answer": "a"
+  },
+  {
+    "question": "Jaka jest główna zaleta ekranów e-ink w kontekście IoT, szczególnie w elektronicznych etykietach cenowych (ESL)?",
+    "answer_a": "Wysoka częstotliwość odświeżania",
+    "answer_b": "Emitują własne światło, co ułatwia czytanie w ciemności",
+    "answer_c": "Nie pobierają energii przy statycznym obrazie, dzięki czemu bateria działa latami",
+    "answer_d": "Mogą wyświetlać filmy w jakości HD",
+    "correct_answer": "c"
+  },
+  {
+    "question": "Które z wymienionych urządzeń pełni funkcję inteligentnej listwy zasilającej z monitoringiem energii, API i obsługą MQTT?",
+    "answer_a": "NETIO Smart PDU",
+    "answer_b": "MiNew Ceiling Sensor",
+    "answer_c": "Nexmosphere IR Sensor",
+    "answer_d": "Minew MVS Gateway",
+    "correct_answer": "a"
+  },
+  {
+    "question": "W jaki sposób Bluetooth Low Energy (BLE) osiąga bardzo niski pobór energii, umożliwiając pracę na jednej baterii CR2032 przez 3-5 lat?",
+    "answer_a": "Stale utrzymuje połączenie, ale z bardzo małą mocą sygnału",
+    "answer_b": "Przez większość czasu znajduje się w stanie głębokiego uśpienia (sleep mode) i budzi się tylko na krótko do wysłania danych",
+    "answer_c": "Wykorzystuje pasmo 5 GHz, które wymaga mniej energii",
+    "answer_d": "Nie wysyła żadnych pakietów, tylko odbiera dane",
+    "correct_answer": "b"
+  },
+  {
+    "question": "Który protokół przemysłowy, bardzo prosty i stabilny, jest często używany w automatyce do odczytu napięcia, prądu czy temperatury i nie ma wbudowanego żadnego bezpieczeństwa (brak haseł)?",
+    "answer_a": "MQTT",
+    "answer_b": "REST API",
+    "answer_c": "Modbus/TCP",
+    "answer_d": "Zigbee",
+    "correct_answer": "c"
+  },
+  {
+    "question": "Co to jest triangulacja RSSI w kontekście lokalizacji BLE?",
+    "answer_a": "Metoda polegająca na pomiarze kąta nadejścia sygnału z jednego nadajnika",
+    "answer_b": "Metoda polegająca na porównaniu siły sygnału (RSSI) z kilku bramek w celu oszacowania położenia nadajnika",
+    "answer_c": "Sposób szyfrowania pakietów BLE",
+    "answer_d": "Protokół do przesyłania plików audio",
+    "correct_answer": "b"
+  },
+  {
+    "question": "Który ze standardów Smart Home jest nowoczesnym protokołem komunikacji mesh opartym na IPv6, a standard Matter umożliwia interoperacyjność urządzeń różnych producentów?",
+    "answer_a": "Zigbee",
+    "answer_b": "Wi-Fi",
+    "answer_c": "Thread",
+    "answer_d": "Bluetooth Classic",
+    "correct_answer": "c"
+  },
+  {
+    "question": "Która technologia radiowa oferuje zasięg nawet kilku kilometrów w mieście (np. do odczytu wodomierzy) przy bardzo niskim poborze energii, ale niskiej przepustowości?",
+    "answer_a": "Wi-Fi 2.4 GHz",
+    "answer_b": "Zigbee",
+    "answer_c": "Bluetooth 5.0",
+    "answer_d": "LoRaWAN",
+    "correct_answer": "d"
+  },
+  {
+    "question": "Co to jest edge computing w architekturze IoT?",
+    "answer_a": "Przetwarzanie wszystkich danych wyłącznie w chmurze",
+    "answer_b": "Przetwarzanie danych lokalnie, na bramce lub urządzeniu brzegowym, bez wysyłania wszystkiego do chmury",
+    "answer_c": "Komunikacja wyłącznie przez Ethernet",
+    "answer_d": "Szyfrowanie danych na poziomie aplikacji",
+    "correct_answer": "b"
+  },
+  {
+    "question": "Które urządzenie Nexmosphere służy do wykrywania pozycji użytkownika (lewo/prawo/odległość) za pomocą podczerwieni, stosowane np. w interaktywnych reklamach?",
+    "answer_a": "PIR Sensor",
+    "answer_b": "IR Sensor",
+    "answer_c": "Vibration Sensor",
+    "answer_d": "Door Sensor (kontaktron)",
+    "correct_answer": "b"
+  },
+  {
+    "question": "Która z wymienionych praktyk NIE jest zalecana do zabezpieczania urządzeń IoT?",
+    "answer_a": "Umieszczenie wszystkich urządzeń IoT w dedykowanej VLAN i izolacja od głównej sieci",
+    "answer_b": "Używanie domyślnych haseł producenta dla wygody",
+    "answer_c": "Regularne aktualizacje firmware (OTA)",
+    "answer_d": "Stosowanie szyfrowania TLS/HTTPS w komunikacji",
+    "correct_answer": "b"
+  },
+  {
+    "question": "Czym charakteryzuje się PIR (Passive Infrared Sensor) używany do wykrywania ruchu w smart office?",
+    "answer_a": "Wysyła aktywnie wiązkę podczerwieni i mierzy czas odbicia",
+    "answer_b": "Reaguje na zmiany promieniowania cieplnego emitowanego przez ciała ludzi i zwierząt",
+    "answer_c": "Wymaga bezpośredniej linii wzroku jak bariera świetlna",
+    "answer_d": "Rejestruje obraz wideo i wysyła go do chmury",
+    "correct_answer": "b"
+  },
+  {
+    "question": "Który protokół sieciowy charakteryzuje się dużym narzutem, prostotą i jest powszechnie używany w aplikacjach webowych, ale mniej wydajny od MQTT w IoT?",
+    "answer_a": "CoAP",
+    "answer_b": "AMQP",
+    "answer_c": "HTTP/REST API",
+    "answer_d": "Z-Wave",
+    "correct_answer": "c"
+  },
+  {
+    "question": "Co to jest kontaktron (door sensor) i jak działa?",
+    "answer_a": "Czujnik drgań wykorzystujący akcelerometr MEMS",
+    "answer_b": "Para magnes i czujnik (zwykle przekaźnik suchostykowy) – rozwarciu drzwi zmienia się pole magnetyczne i generowany jest sygnał",
+    "answer_c": "Czujnik podczerwieni wykrywający otwarcie drzwi na podstawie promieniowania cieplnego",
+    "answer_d": "Czujnik ultradźwiękowy mierzący odległość do drzwi",
+    "correct_answer": "b"
+  },
+  {
+    "question": "Które z poniższych zastosowań jest typowe dla systemu MHS (Healthcare IoT) z wykorzystaniem opasek BLE?",
+    "answer_a": "Automatyczna zmiana cen na półkach sklepowych",
+    "answer_b": "Lokalizacja pacjentów i przycisk SOS w szpitalu lub opiece senioralnej",
+    "answer_c": "Sterowanie oświetleniem w biurze",
+    "answer_d": "Monitorowanie drgań maszyn przemysłowych",
+    "correct_answer": "b"
+  },
+  {
+    "question": "Który element architektury IoT odbiera dane z urządzeń (sensory, beacony), agreguje je, filtruje i przesyła do chmury?",
+    "answer_a": "Warstwa aplikacji",
+    "answer_b": "Gateway",
+    "answer_c": "Chmura/Backend",
+    "answer_d": "Sensor brzegowy",
+    "correct_answer": "b"
+  },
+  {
+    "question": "Jaki jest główny problem związany z używaniem pojedynczej bramki BLE do precyzyjnej lokalizacji w pomieszczeniach?",
+    "answer_a": "Zbyt duża przepustowość BLE",
+    "answer_b": "RSSI jest niestabilne (zakłócenia, ciało ludzkie, przeszkody), przez co dokładność jest niska; potrzebna jest triangulacja z wielu bramek",
+    "answer_c": "BLE nie może być używany do lokalizacji, tylko do przesyłania plików",
+    "answer_d": "Bramki BLE nie mogą pracować w sieciach przemysłowych",
+    "correct_answer": "b"
+  },
+  {
+    "question": "Co to jest Zigbee2MQTT i do czego służy w kontekście Home Assistant?",
+    "answer_a": "Jest to sprzętowa bramka Zigbee produkcji Philips Hue",
+    "answer_b": "Jest to most (oprogramowanie) tłumaczący komunikację Zigbee na MQTT, pozwalający integrować tanie urządzenia Zigbee z Home Assistant",
+    "answer_c": "Jest to protokół komunikacji między chmurą a urządzeniami Wi-Fi",
+    "answer_d": "Jest to zastępnik dla MQTT, używany wyłącznie w przemysłowych sterownikach PLC",
+    "correct_answer": "b"
+  },
+  {
+    "question": "Które z wymienionych rozwiązań IoT jest przeznaczone do automatycznej inwentaryzacji i śledzenia palet w magazynie (warehouse tracking) za pomocą beaconów BLE?",
+    "answer_a": "MOS Smart Office",
+    "answer_b": "MHS Healthcare",
+    "answer_c": "MWS – Warehouse Solutions (Pallet Beacon)",
+    "answer_d": "NETIO Smart PDU",
+    "correct_answer": "c"
+  }
+]

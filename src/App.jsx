@@ -3,19 +3,12 @@ import { SocketProvider, useSocket } from "./context/SocketContext";
 import Level1 from "./components/Level1";
 import Level2 from "./components/Level2";
 import Level3 from "./components/Level3";
+import Questions from "./components/Questions";
 
 // Komponent z paskiem nagłówkowym (wspólny dla wszystkich poziomów)
 function Layout() {
   const { state, users } = useSocket();
   const location = useLocation();
-
-  if (!state) {
-    return (
-      <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center">
-        Loading...
-      </div>
-    );
-  }
 
   const levelObjectives = {
     1: "Uruchom wszystkie wymagane systemy showroomu bez przeciążenia sieci.",
@@ -61,6 +54,8 @@ function Layout() {
         <Route path="/level1" element={<Level1 />} />
         <Route path="/level2" element={<Level2 />} />
         <Route path="/level3" element={<Level3 />} />
+        <Route path="/questions" element={<Questions />} />
+
       </Routes>
     </div>
   );
