@@ -3,7 +3,7 @@ import { io } from "socket.io-client";
 
 const SocketContext = createContext();
 
-const socket = io("http://192.168.68.247:3001");
+const socket = io("http://172.20.10.13:3001");
 
 export function SocketProvider({ children }) {
   const [state, setState] = useState(null);
