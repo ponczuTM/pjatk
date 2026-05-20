@@ -1,0 +1,243 @@
+
+
+
+
+
+
+
+
+-----------------------------------------------------
+|                    STACJA A                       |
+|                                                   |
+| SYSTEM NAWADNIANIA – OPÓŹNIENIE POMPY             |
+|                                                   |
+| W inteligentnym systemie nawadniania opóźnienie   |
+| pompy ustawiane jest na podstawie liczby liter w  |
+| angielskiej nazwie protokołu bezprzewodowego      |
+|                                                   |
+|                                                   |
+| ▶ Jaka to cyfra?                                  |
+|                                                   |
+| Wynik:         [wpisz tę cyfrę w polu A]          |
+-----------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-----------------------------------------------------
+|                    STACJA B                       |
+|                                                   |
+| PROTOKÓŁ WINDY – LICZBA AKTYWNYCH PIĘTER          |
+|                                                   |
+| Winda serwisowa komunikuje się za pomocą sieci    |
+| opartej na pewnym standardzie. Liczba pięter      |
+| aktywnych to dokładnie liczba liter w nazwie tego |
+| standardu.                                        |
+|                                                   |
+| ▶ Jaka to cyfra?                                  |
+|                                                   |
+| Wynik:         [wpisz tę cyfrę w polu B]          |
+-----------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-----------------------------------------------------
+|                    STACJA C                       |
+|                                                   |
+| SYSTEM OŚWIETLENIA – MNOŻNIK MOCY                 |
+|                                                   |
+| Sterownik oświetlenia korzysta z protokołu HTTP.  |
+| Mnożnik mocy (wartość od 0 do 9) jest równy cyfrze|
+| jedności w numerze portu HTTP.                    |
+|                                                   |
+| ▶ Jaka to cyfra?                                  |
+|                                                   |
+| Wynik:         [wpisz tę cyfrę w polu C]          |
+-----------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-------------------------------------------------------
+|                    STACJA D                         |
+|                                                     |
+| TEMPERATURA BAZOWA W SERWEROWNI                     |
+|                                                     |
+| W centrum danych temperatura bazowa (w stopniach    |
+| Celsjusza) jest ustalana na podstawie częstotliwości|
+| pasma ISM **2.4 GHz** – bez przecinka.              |
+|                                                     |
+| ▶ Jaka to cyfra?                                    |
+|                                                     |
+| Wynik:         [wpisz tę cyfrę w polu D]            |
+-------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-----------------------------------------------------
+|                    STACJA E                       |
+|                                                   |
+| PRIORYTET PAKIETÓW W SIECI IoT                    |
+|                                                   |
+| Priorytet pakietów wyznaczany jest przez sumę cyfr|
+| w maksymalnej długości adresu MAC (wyrażonej w    |
+| znakach heksadecymalnych). Standardowy adres MAC  |
+| to 12 znaków.                                     |
+|                                                   |
+| ▶ Oblicz sumę: 1 + 2 = ?                          |
+|                                                   |
+| Wynik:         [wpisz tę cyfrę w polu E]          |
+-----------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+------------------------------------------------------
+|                    STACJA F                        |
+|                                                    |
+| LICZBA AKTYWNYCH KAMER                             |
+|                                                    |
+| System monitoringu wizyjnego używa protokołu HTTPS.|
+| Liczba kamer jest równa cyfrze dziesiątek numeru   |
+| portu HTTPS.                                       |
+|                                                    |
+| ▶ Jaka to cyfra?                                   |
+|                                                    |
+| Wynik:         [wpisz tę cyfrę w polu F]           |
+-----------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

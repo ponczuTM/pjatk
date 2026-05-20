@@ -1,0 +1,8 @@
+curl "http://172.20.10.13/netio.cgi?pass=&output1=0&output2=0&output3=0&output4=0"
+
+curl "http://172.20.10.13/netio.cgi?pass=&output1=1"
+
+curl "http://172.20.10.13/netio.cgi?pass=&output1=5&output2=5&output3=5&output4=1"
+
+curl "http://172.20.10.13/netio.cgi?pass=&output1=1&output2=1&output3=1&output4=1"
+
