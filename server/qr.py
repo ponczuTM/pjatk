@@ -27,8 +27,8 @@ def generate_qr(data, filename):
 
 # Dane do wygenerowania
 urls = [
-    ("http://172.20.10.13:5173/", "qr_1.png"),
-    ("http://172.20.10.13:5173/questions", "qr_2.png")
+    ("http://172.19.240.69:5173/", "qr_1.png"),
+    ("http://172.19.240.69:5173/questions", "qr_2.png")
 ]
 
 if __name__ == "__main__":

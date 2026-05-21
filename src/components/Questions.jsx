@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 
-const API_URL = "http://172.20.10.13:7777";
+const API_URL = "http://172.19.240.69:7777";
 
 export default function Questions() {
   const [blocked, setBlocked] = useState(false);

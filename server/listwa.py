@@ -1,7 +1,7 @@
 import requests
 import time
 
-IP = "172.20.10.13"
+IP = "172.19.240.69"
 PASSPHRASE = "" 
 BASE_URL = f"http://{IP}/netio.cgi?pass={PASSPHRASE}"
 
